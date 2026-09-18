@@ -1,0 +1,17 @@
+target/
+*.class
+*.jar
+.DS_Store
+.idea/
+*.iml
+.vscode/
+
+# ── Runtime data — never bake player records into the image ──────────────
+# Elastic Beanstalk containers are ephemeral, so a records file committed to
+# the repository or copied into the image is both wrong and misleading: it is
+# destroyed on the next deployment. Durable storage is EFS or S3, configured
+# at runtime. See NOTICE.md and the run manual.
+*-scores.json
+ruhrohgue-scores.json
+scores.json
+/data/

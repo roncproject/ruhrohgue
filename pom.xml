@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  pom.xml — Hack 1.0.2 AWS Web Edition
+  =======================================
+  Converts the standalone hack-java port (com.sun.net.httpserver)
+  into a Spring Boot fat-JAR deployable on AWS Elastic Beanstalk.
+
+  Key changes from the original hack-java pom.xml:
+    • Spring Boot 3.2.5 parent (replaces plain maven-jar-plugin)
+    • spring-boot-starter-web   → embedded Tomcat + Spring MVC
+    • spring-boot-starter-actuator → /actuator/health for AWS ALB
+    • Java 17 (EB Amazon Linux 2023 Docker platform ships Corretto 17)
+    • spring-boot-maven-plugin → executable fat JAR
+
+  Build:     mvn clean package
+  Run local: java -jar target/ruhrohgue.jar
+             mvn spring-boot:run
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.2.5</version>
+    <relativePath/>
+  </parent>
+
+  <groupId>nl.cwi.hack</groupId>
+  <artifactId>ruhrohgue</artifactId>
+  <version>3.1.0</version>
+  <packaging>jar</packaging>
+  <name>RuhRohgue — Cloud Edition</name>
+  <description>
+    RuhRohgue — a port of the Hack 1.0.2 roguelike (CWI Amsterdam, 1985)
+    running as a Spring Boot Progressive Web App on AWS Elastic Beanstalk.
+  </description>
+
+  <properties>
+    <java.version>17</java.version>
+    <aws.sdk.version>2.25.60</aws.sdk.version>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+    <!-- Spring MVC + embedded Tomcat -->
+    <!-- Spring MVC + Thymeleaf for the SSR landing shell -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-thymeleaf</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- /actuator/health endpoint — AWS ALB health checks -->
+    <!-- Jakarta Bean Validation — enforces the 3-character alphanumeric
+         player-name rule at the controller boundary. -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
+    <!-- AWS SDK v2 (S3 only) — durable player records on ephemeral
+         Elastic Beanstalk containers. Used solely by S3ScoreStore; the
+         application runs without AWS credentials when the file store is
+         configured, which is the default. -->
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>s3</artifactId>
+      <version>${aws.sdk.version}</version>
+      <exclusions>
+        <!-- Netty arrives via the async client, which this project does not
+             use. Excluding it keeps the JAR and the CVE surface smaller. -->
+        <exclusion>
+          <groupId>software.amazon.awssdk</groupId>
+          <artifactId>netty-nio-client</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
+    <!-- Testing -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>ruhrohgue</finalName>
+
+    <!-- Include static resources (HTML, manifest, sw.js, icons) -->
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+      </resource>
+    </resources>
+
+    <plugins>
+      <!-- Builds the executable fat JAR (replaces maven-jar-plugin) -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+</project>
