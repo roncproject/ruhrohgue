@@ -1,7 +1,7 @@
 {
   "name": "RuhRohgue — Cloud Edition",
   "short_name": "RuhRohgue",
-  "description": "RuhRohgue — a port of the Hack 1.0.2 roguelike (CWI Amsterdam, 1985) as a Progressive Web App on AWS Elastic Beanstalk",
+  "description": "RuhRohgue, Cloud version of Hack 1.0.2. Copyright © Stichting Mathematisch Centrum, Amsterdam, 1985",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

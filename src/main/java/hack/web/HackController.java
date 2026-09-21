@@ -69,17 +69,13 @@ public class HackController {
     @GetMapping("/")
     public String index(Model model) {
         model.addAttribute("pageTitle",
-                "RuhRohgue - Hardened Cloud Roguelike");
+                "RuhRohgue, Cloud version of Hack 1.0.2. Copyright © Stichting Mathematisch Centrum, Amsterdam, 1985");
         model.addAttribute("pageDesc",
-                "A custom-hardened, containerized Java 17 Spring Boot port of the classic 1985 UNIX "
-                + "rogue engine. Playable live on custom inputs.");
+                "RuhRohgue, Cloud version of Hack 1.0.2. Copyright © Stichting Mathematisch Centrum, Amsterdam, 1985");
         model.addAttribute("h1Title",
-                "RuhRohgue — Classic Roguelike Dungeon Crawler (Cloud Edition, after Hack 1.0.2, CWI Amsterdam 1985)");
+                "RuhRohgue, Cloud version of Hack 1.0.2. Copyright © Stichting Mathematisch Centrum, Amsterdam, 1985");
         model.addAttribute("introText",
-                "RuhRohgue is a port of the classic 1985 roguelike game Hack 1.0.2, originally developed "
-                + "at CWI Amsterdam. Explore procedurally generated dungeons, fight monsters, "
-                + "collect gold, find shops and vaults, and try to escape with your life. "
-                + "All playable in the browser with no installation required.");
+                "RuhRohgue, Cloud version of Hack 1.0.2. Copyright © Stichting Mathematisch Centrum, Amsterdam, 1985");
         model.addAttribute("canonicalUrl", BASE_URL + "/");
         model.addAttribute("appVersion", "2.0.3");
         model.addAttribute("buildInfo",
@@ -300,10 +296,9 @@ public class HackController {
              + "  \"@context\": \"https://schema.org\",\n"
              + "  \"@type\": \"VideoGame\",\n"
              + "  \"name\": \"RuhRohgue\",\n"
-             + "  \"alternateName\": [\"RuhRohgue Cloud Edition\", \"Hack 1.0.2\"],\n"
-             + "  \"description\": \"RuhRohgue — a port of the classic 1985 roguelike dungeon-crawler "
-             + "Hack 1.0.2 (CWI Amsterdam), running as a server-side rendered Spring Boot "
-             + "Progressive Web App on AWS Elastic Beanstalk.\",\n"
+             + "  \"alternateName\": [\"RuhRohgue, Cloud version of Hack 1.0.2. Copyright © Stichting Mathematisch Centrum, Amsterdam, 1985\", \"Hack 1.0.2\"],\n"
+             + "  \"description\": \"RuhRohgue, Cloud version of Hack 1.0.2. Copyright © Stichting "
+             + "Mathematisch Centrum, Amsterdam, 1985\",\n"
              + "  \"url\": \"" + BASE_URL + "/\",\n"
              + "  \"genre\": [\"Roguelike\", \"Dungeon crawler\", \"Turn-based\"],\n"
              + "  \"playMode\": \"SinglePlayer\",\n"
