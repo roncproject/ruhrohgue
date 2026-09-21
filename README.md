@@ -1,7 +1,12 @@
-# RuhRohgue — Cloud Edition
+# 🕹️ RuhRohgue - Cloud Edition
 
-**RuhRohgue** is a Progressive Web App port of the **Hack 1.0.2** roguelike
-(CWI Amsterdam, 1985), running as a **Spring Boot** fat-JAR.
+**RuhRohgue** is a vibe-coded java port of the **Hack 1.0.2** roguelike
+(CWI Amsterdam, 1985)
+
+🚀 **Live Demo:** [https://ruhrohgue.dev](https://ruhrohgue.dev)
+
+## Features
+* **Game Engine variable:** Enter seed in start menu to get a deterministic dungeons, or omit for random.
 
 ---
 
