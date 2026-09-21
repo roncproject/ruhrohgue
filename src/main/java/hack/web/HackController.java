@@ -50,7 +50,7 @@ public class HackController {
     private static final String BASE_URL =
             System.getenv("CANONICAL_URL") != null
             ? System.getenv("CANONICAL_URL")
-            : "https://ruhrohgue.aws.example.com";
+            : "https://ruhrohgue.dev";
 
     public HackController(GameSession session, HighScoreService highScoreService) {
         this.session          = session;
@@ -69,11 +69,10 @@ public class HackController {
     @GetMapping("/")
     public String index(Model model) {
         model.addAttribute("pageTitle",
-                "RuhRohgue — Cloud Edition | Classic Roguelike Dungeon Crawler");
+                "RuhRohgue - Hardened Cloud Roguelike");
         model.addAttribute("pageDesc",
-                "Play RuhRohgue, a browser port of the classic 1985 CWI Amsterdam roguelike "
-                + "dungeon-crawler Hack 1.0.2. Procedurally generated dungeons, turn-based combat, "
-                + "shops, vaults, and six character classes. No installation required.");
+                "A custom-hardened, containerized Java 17 Spring Boot port of the classic 1985 UNIX "
+                + "rogue engine. Playable live on custom inputs.");
         model.addAttribute("h1Title",
                 "RuhRohgue — Classic Roguelike Dungeon Crawler (Cloud Edition, after Hack 1.0.2, CWI Amsterdam 1985)");
         model.addAttribute("introText",
