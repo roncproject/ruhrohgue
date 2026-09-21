@@ -6,7 +6,7 @@
 🚀 **Live Demo:** [https://ruhrohgue.dev](https://ruhrohgue.dev)
 
 ## Features
-* **Game Engine variable:** Enter seed in start menu to get a deterministic dungeons, or omit for random.
+* **Game Engine variable:** Enter seed in start menu to get a deterministic dungeon for automatic testing, or omit for random duncgeons.
 
 ---
 
