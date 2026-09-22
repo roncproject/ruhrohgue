@@ -1,0 +1,115 @@
+{
+	"info": {
+		"_postman_id": "b3e2f1a0-6c4d-4b8a-9e2f-ruhrohgue001",
+		"name": "RuhRohgue HackController API",
+		"description": "Endpoints exposed by HackController.java (POST /new, POST /command, GET /state). Requests share server-side session state, so /new should generally run before /command or /state in a given pass.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"event": [
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"pm.test(\"Status code is 200 or 429\", function () {",
+					"    pm.expect(pm.response.code).to.be.oneOf([200, 429]);",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "POST /new - Start New Game",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "name",
+							"value": "Abc",
+							"type": "text",
+							"description": "Exactly 3 alphanumeric characters (^[a-zA-Z0-9]{3}$)"
+						},
+						{
+							"key": "role",
+							"value": "Fighter",
+							"type": "text",
+							"description": "One of: Fighter, Cave-man, Tourist, Wizard, Knight, Speleologist"
+						},
+						{
+							"key": "seed",
+							"value": "12345",
+							"type": "text",
+							"description": "Optional signed 64-bit integer; blank/invalid falls back to a random seed"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseUrl}}/new",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"new"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST /command - Execute Command",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "cmd",
+							"value": "s",
+							"type": "text",
+							"description": "Single game command character/string (e.g. movement key)"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseUrl}}/command",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"command"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET /state - Poll Game State",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/state",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"state"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
