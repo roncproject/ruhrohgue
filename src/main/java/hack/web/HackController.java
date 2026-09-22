@@ -3,11 +3,15 @@ package hack.web;
 import hack.engine.*;
 import hack.model.*;
 import hack.web.dto.NewGameRequest;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +49,17 @@ public class HackController {
 
     private final GameSession      session;
     private final HighScoreService highScoreService;
+
+    /**
+     * Shared secret required on {@code DELETE /dev/scores}, bound from
+     * {@code ruhrohgue.admin.token} (which in turn reads the {@code ADMIN_TOKEN}
+     * environment variable — see application.properties). Read once at startup
+     * via {@code @Value} rather than re-reading the environment per request.
+     * Blank (the default when {@code ADMIN_TOKEN} is unset) means the route is
+     * unconditionally locked out, not open to an empty token.
+     */
+    @Value("${ruhrohgue.admin.token:}")
+    private String adminToken;
 
     /** Canonical base URL — override with environment variable CANONICAL_URL in prod. */
     private static final String BASE_URL =
@@ -200,9 +215,8 @@ public class HackController {
     // GET  /dev/scores         → returns the current high-score list as JSON
     // DELETE /dev/scores       → clears the list (wipes the persisted file)
     //
-    // These endpoints are intentionally simple and unauthenticated — the game
-    // is a single-server installation and the developer runs it locally or on
-    // a private AWS instance. Use Spring Security if public exposure is needed.
+    // GET is read-only and unauthenticated. DELETE is destructive and requires
+    // the X-Admin-Token header to match ruhrohgue.admin.token (see above).
 
     @GetMapping("/dev/scores")
     @ResponseBody
@@ -212,9 +226,31 @@ public class HackController {
 
     @org.springframework.web.bind.annotation.DeleteMapping("/dev/scores")
     @ResponseBody
-    public ResponseEntity<String> devClearScores() {
+    public ResponseEntity<String> devClearScores(
+            @RequestHeader(value = "X-Admin-Token", required = false) String token) {
+        if (!isValidAdminToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid administration credentials.");
+        }
         highScoreService.clearAll();
         return ResponseEntity.ok("High score list cleared.");
+    }
+
+    /**
+     * Constant-time comparison against the configured admin token.
+     *
+     * <p>A blank configured token (the default) means the route is locked out
+     * for everyone rather than accepting an empty header as a match. Uses
+     * {@link MessageDigest#isEqual} rather than {@code String.equals} so
+     * comparison time does not leak how many leading bytes of a guess were
+     * correct.</p>
+     */
+    private boolean isValidAdminToken(String token) {
+        if (adminToken == null || adminToken.isBlank()) return false;
+        String candidate = (token == null) ? "" : token;
+        return MessageDigest.isEqual(
+                adminToken.getBytes(StandardCharsets.UTF_8),
+                candidate.getBytes(StandardCharsets.UTF_8));
     }
 
     // ── robots.txt ────────────────────────────────────────────────────────────
