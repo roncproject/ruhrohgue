@@ -13,13 +13,10 @@ if %errorlevel% neq 0 (
 cd ..\..
 
 echo.
-echo [2/2] Running Postman API Flood Attack & Generating HTML Dashboard...
-mkdir tests\api\reports 2>nul
-call newman run tests\api\RuhRohgue_Postman_Collection.json --env-var "baseUrl=http://localhost:8081" -n 50 --reporters cli,htmlextra --reporter-htmlextra-export tests\api\reports\api_security_report.html
+echo [2/2] Running Postman API Flood Attack ^& Generating HTML Dashboard...
+call newman run tests\api\RuhRohgue_Postman_Collection.json --env-var "baseUrl=http://localhost:8081" -n 50 --reporters cli
 
 echo.
 echo =======================================================================
 echo 🎉 ALL CHECKPOINTS PASSED SUCCESSFULLY!
-echo 📊 Open your browser to view the API archive report:
-echo    tests\api\reports\api_security_report.html
 echo =======================================================================
