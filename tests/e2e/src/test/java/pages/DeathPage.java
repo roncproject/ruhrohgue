@@ -5,9 +5,10 @@ import com.microsoft.playwright.Page;
 public class DeathPage {
     private final Page page;
 
-    // Pas deze selectors aan op basis van je legendarische RIP grafsteen HTML element
-    private final String tombstoneContainer = "#tombstone";
-    private final String finalScoreDisplay = ".final-score";
+    // Selectors — the game reuses one overlay (#gameover-screen) for death,
+    // escape and quit; #go-heading's text distinguishes which one occurred.
+    private final String tombstoneContainer = "#gameover-screen";
+    private final String finalScoreDisplay = "#go-score";
 
     public DeathPage(Page page) {
         this.page = page;

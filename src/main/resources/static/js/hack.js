@@ -731,25 +731,13 @@ nameInput.addEventListener('keypress',function(e){
   if(nameInput.value.length>=3&&ch&&ch.length===1)e.preventDefault();
 });
 
-// Seed field: digits only, with an optional leading minus.
-var seedInput=document.getElementById('input-seed');
-if(seedInput){
-  seedInput.addEventListener('input',function(){
-    var clean=seedInput.value.replace(/[^0-9-]/g,'');
-    clean=clean.charAt(0)==='-'?('-'+clean.slice(1).replace(/-/g,'')):clean.replace(/-/g,'');
-    if(seedInput.value!==clean)seedInput.value=clean;
-  });
-  seedInput.addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('btn-start').click();});
-}
-
 document.getElementById('btn-start').addEventListener('click',function(){
   var nameVal=nameInput.value.trim();
   if(!NAME_RE.test(nameVal)){nameInput.style.outline='2px solid #f33';nameInput.focus();
     document.getElementById('message-bar').textContent=
       'Name must be exactly 3 letters or digits.';
     setTimeout(function(){nameInput.style.outline='';},1500);return;}
-  var seedVal=seedInput?seedInput.value.trim():'';
-  startGame(nameVal,document.getElementById('input-role').value,seedVal);
+  startGame(nameVal,document.getElementById('input-role').value);
 });
 nameInput.addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('btn-start').click();});
 document.getElementById('btn-newgame').addEventListener('click',function(){

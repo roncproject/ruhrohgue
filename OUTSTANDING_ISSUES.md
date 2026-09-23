@@ -1,31 +1,12 @@
-# 🗺️ Technical Modernization Ledger: RuhRohgue
+# Outstanding Issues — RuhRohgue
 
-This document tracks standard maintenance tasks and protocol alignment strategies.
-
----
-
-### [TRK-01] Lifecycle Parameter Hardening
-* **Status:** Scheduled Evaluation
-* **Scope:** Internal administrative parameter verification logic.
-* **Objective:** Align runtime context filters with enterprise authorization formats.
-
----
-
-### [TRK-02] Multitenant Session Mapping
-* **Status:** In Review
-* **Scope:** Shared process memory state architecture.
-* **Objective:** Expand baseline concurrent user resource routing profiles.
-
----
-
-### [TRK-03] Data Stream Standardization
-* **Status:** In Review
-* **Scope:** Parameter ingest serialization protocols.
-* **Objective:** Migrate incoming request strings to standard data boundaries.
-
----
-
-### [TRK-04] Directory Pattern Restructuring
-* **Status:** Backlog
-* **Scope:** Gateway namespaces.
-* **Objective:** Establish modular path prefixes across service route mappings.
+| Code | Issue | Risk / Impact | Assessment (behind Cloudflare) | Status |
+|---|---|---|---|---|
+| TRK-01 | No auth on destructive endpoint | Anyone could wipe the high-score file (`DELETE /dev/scores`) | No app-layer help from Cloudflare; fix had to live in-app. Optional: WAF rule restricting `/dev/*`. | ✅ Resolved — `X-Admin-Token` required, locked out if unset |
+| TRK-02A | `/new` reseeds the global `Dice` RNG, stomping every other active session | Breaks seed reproducibility whenever >1 game is running | Cloudflare has no bearing — in-process bug | 🟡 Open (low priority — nice-to-have) |
+| TRK-02B | `beginLevelGeneration()`/`endLevelGeneration()` race on non-atomic static fields | Same symptom as 2A, but needs true concurrent overlap to misfire | Cloudflare has no bearing — in-process bug | 🟡 Open (low priority — nice-to-have) |
+| TRK-03 | `/new`/`/command` use form-urlencoded, not JSON | None — only consumer is the bundled JS client | Content-type agnostic at the edge; matters only with a non-browser API client | 🟡 Open (low priority) |
+| TRK-04 | Routes unprefixed — no `/api/v1` | None — single client, no external consumers | Would enable per-version CDN rules later; nothing to gain until a 2nd API exists | 🟡 Open (low priority) |
+| TRK-05 | e2e suite had no runner (0 tests ever executed) plus selectors/assertions not matching real DOM | False confidence — `mvn test` reported success while testing nothing | N/A — local test-authoring bug, not an edge concern | ✅ Resolved — runner added, selectors and title check fixed, suite now passes |
+| TRK-06 | Rate limiter trusts spoofable `CF-Connecting-IP` header | Spoofing it per request resets the bucket — bypasses the DoS throttle if the origin is reachable directly | No origin-lock confirms traffic actually transits Cloudflare — assumption is unverified | 🟡 Open (low priority) |
+| TRK-07 | `run-all-tests.bat` doesn't start the app itself, has an unescaped `&` in its echo output, and aborts the whole suite on any single e2e flake | Looks fully broken on a rerun-worthy flake; silently does nothing if the server isn't already running | N/A — local tooling, not an edge/security concern | 🟡 Open (low priority) |

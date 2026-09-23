@@ -5,11 +5,10 @@ import com.microsoft.playwright.Page;
 public class StartPage {
     private final Page page;
 
-    // Selectors
-    private final String nameInput = "input[name='character-name']";
-    private final String classSelect = "select[name='character-class']";
-    private final String seedInput = "input[name='seed']";
-    private final String descendButton = "#descend-btn";
+    // Selectors — match the real ids in templates/index.html
+    private final String nameInput = "#input-name";
+    private final String classSelect = "#input-role";
+    private final String descendButton = "#btn-start";
 
     public StartPage(Page page) {
         this.page = page;
@@ -31,13 +30,8 @@ public class StartPage {
         return page.locator(classSelect).isVisible();
     }
 
-    public boolean isSeedInputVisible() {
-        return page.locator(seedInput).isVisible();
-    }
-
-    public void fillForm(String name, String seed) {
+    public void fillForm(String name) {
         page.fill(nameInput, name);
-        page.fill(seedInput, seed);
     }
 
     public void clickDescend() {

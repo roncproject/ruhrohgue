@@ -6,8 +6,8 @@ import com.microsoft.playwright.Locator;
 public class GamePage {
     private final Page page;
 
-    // Selectors
-    private final String terminalGrid = "#terminal-grid";
+    // Selectors — match the real ids in templates/index.html
+    private final String terminalGrid = "#dungeon-grid";
     private final String playerIcon = "[data-type='player']";
 
     public GamePage(Page page) {
