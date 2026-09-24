@@ -3,7 +3,7 @@
 **RuhRohgue** is a vibe-coded java port of the **Hack 1.0.2** roguelike
 (CWI Amsterdam, 1985)
 
-🚀 **Live Demo:** [https://ruhrohgue.dev](https://ruhrohgue.dev) *Momentarily down for maintenance* 
+🚀 **Live Demo:** [https://ruhrohgue.dev](https://ruhrohgue.dev) 
 
 ---
 
