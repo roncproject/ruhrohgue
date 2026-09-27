@@ -40,7 +40,8 @@ src/main/java/hack/
     HighScoreEntry.java       — score record (JSON-serializable)
     GoldPile.java             — gold + shop food markers (negative amount = food)
   web/
-    HackController.java       — REST endpoints: /new /command /state /dev/scores
+    HackController.java       — REST endpoints: /api/v1/new /api/v1/command
+                                 /api/v1/state /dev/scores
     GameSession.java          — @SessionScope state holder
     GameStateSerializer.java  — GameState → JSON for the JS client
     HighScoreService.java     — persist/load Magnificent 7; clearAll()
@@ -65,7 +66,7 @@ CLAUDE.md                     — AI agent instructions (references this file)
   typeIndex; these are excluded from `goldList()` in the serializer and rendered via
   cell `scrsym='%'` from `mapGrid()`.
 - **Dice.seed()**: All randomness goes through `Dice`. A seed can be supplied per
-  game in the **Seed** field on the new-game screen (`POST /new` form field `seed`),
+  game in the **Seed** field on the new-game screen (`POST /api/v1/new` form field `seed`),
   or globally with `--seed N` at startup. Seed precedence is: form field → `--seed`
   → `System.currentTimeMillis()`. The RNG is seeded once in `HackController.newGame()`
   immediately before world building; **nothing downstream may re-seed `Dice`**, or
@@ -117,4 +118,4 @@ java -jar ruhrohgue.jar > game.log 2>&1                    # save to file
    Strange objects (ILLOBJ_SYM `'\'`) get `strange:true` flag; JS filters them from
    display but the slot letter must remain correct for `findBySlot()` on the server.
 7. **Session timeout** is 4 hours. Tab-freeze after idle is handled by a
-   `visibilitychange` listener that calls `GET /state` on tab reveal.
+   `visibilitychange` listener that calls `GET /api/v1/state` on tab reveal.

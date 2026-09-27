@@ -6,14 +6,14 @@
  * PWA Characteristics satisfied (per Wikipedia/W3C):
  *   ✓ Offline capable   — shell served from cache when network fails
  *   ✓ Installable       — combined with manifest.json
- *   ✓ Network-first API — /new and /command always hit the server when online
+ *   ✓ Network-first API — /api/v1/new and /api/v1/command always hit the server when online
  *   ✓ Cache-first UI    — index.html, icons served instantly from cache
  *   ✓ Background sync   — handled by the JS offline queue in index.html
  */
 
 'use strict';
 
-const CACHE_NAME    = 'ruhrohgue-v4';
+const CACHE_NAME    = 'ruhrohgue-v5';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -59,9 +59,9 @@ self.addEventListener('fetch', event => {
   if (url.origin !== self.location.origin) return;
 
   // API endpoints: network-first (game state must always be fresh)
-  if (url.pathname === '/new'     ||
-      url.pathname === '/command' ||
-      url.pathname === '/state'   ||
+  if (url.pathname === '/api/v1/new'     ||
+      url.pathname === '/api/v1/command' ||
+      url.pathname === '/api/v1/state'   ||
       url.pathname.startsWith('/actuator/')) {
     event.respondWith(networkFirst(req));
     return;

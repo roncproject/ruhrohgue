@@ -343,7 +343,7 @@ async function startGame(name,role,seed){
   var body='name='+encodeURIComponent(name)+'&role='+encodeURIComponent(role);
   if(seed) body+='&seed='+encodeURIComponent(seed);
   try{
-    var r=await fetch('/new',{method:'POST',body:body,headers:{'Content-Type':'application/x-www-form-urlencoded'}});
+    var r=await fetch('/api/v1/new',{method:'POST',body:body,headers:{'Content-Type':'application/x-www-form-urlencoded'}});
     var d=await r.json();
     // The server validates the name independently of the browser. A rejection
     // must be shown rather than swallowed, or the new-game screen appears to
@@ -371,7 +371,7 @@ async function sendCommand(cmd, attempt){
   if(!isOnline){offlineQueue.push(cmd);document.getElementById('message-bar').textContent='[offline] Queued: '+cmd;return;}
   attempt = attempt || 0;
   try{
-    var r=await fetch('/command',{method:'POST',body:'cmd='+encodeURIComponent(cmd),headers:{'Content-Type':'application/x-www-form-urlencoded'}});
+    var r=await fetch('/api/v1/command',{method:'POST',body:'cmd='+encodeURIComponent(cmd),headers:{'Content-Type':'application/x-www-form-urlencoded'}});
 
     // ── Rate limited ────────────────────────────────────────────────────
     // The server answers 429 with {"error":"rate_limited"}, which is NOT a
@@ -430,7 +430,7 @@ window.addEventListener('offline',function(){setOnlineStatus(false);});
 document.addEventListener('visibilitychange', async function() {
   if (document.visibilityState === 'visible' && gameActive && isOnline) {
     try {
-      var r = await fetch('/state', { method: 'GET' });
+      var r = await fetch('/api/v1/state', { method: 'GET' });
       if (r.ok) {
         var d = await r.json();
         if (d && !d.error) applyState(d);

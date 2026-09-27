@@ -28,15 +28,18 @@ import java.util.Map;
  * (Google, Bing, GPTBot, ClaudeBot, PerplexityBot) can index the page content
  * without executing any JavaScript.</p>
  *
- * <h2>API (unchanged from v1)</h2>
+ * <h2>API</h2>
  * <pre>
- *   GET  /              → Thymeleaf SSR HTML shell (index.html template)
- *   POST /new           → JSON game state (starts new game)
- *   POST /command       → JSON game state (executes one command)
- *   GET  /state         → JSON game state (read-only poll)
- *   GET  /robots.txt    → crawl directives + sitemap pointer
- *   GET  /sitemap.xml   → XML sitemap with canonical URL
+ *   GET  /                  → Thymeleaf SSR HTML shell (index.html template)
+ *   POST /api/v1/new        → JSON game state (starts new game)
+ *   POST /api/v1/command    → JSON game state (executes one command)
+ *   GET  /api/v1/state      → JSON game state (read-only poll)
+ *   GET  /robots.txt        → crawl directives + sitemap pointer
+ *   GET  /sitemap.xml       → XML sitemap with canonical URL
  * </pre>
+ * <p>Game routes moved under {@code /api/v1} (TRK-04); {@code /dev/scores},
+ * the crawler routes and {@code /} stay unprefixed — they aren't part of the
+ * versioned game API surface.</p>
  *
  * <h2>Test-framework compatibility (unchanged)</h2>
  * <p>All {@code data-*} attributes, {@code id} values, ARIA roles, and DOM structure
@@ -117,7 +120,7 @@ public class HackController {
      * a pattern: the set of valid classes is known and closed, so an allow-list
      * is both stricter and clearer than any regular expression.</p>
      */
-    @PostMapping(value = "/new", consumes = "application/x-www-form-urlencoded")
+    @PostMapping(value = "/api/v1/new", consumes = "application/x-www-form-urlencoded")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> newGame(
             @RequestParam(defaultValue = "") String name,
@@ -176,7 +179,7 @@ public class HackController {
         return ResponseEntity.ok(GameStateSerializer.toMap(gs));
     }
 
-    @PostMapping(value = "/command", consumes = "application/x-www-form-urlencoded")
+    @PostMapping(value = "/api/v1/command", consumes = "application/x-www-form-urlencoded")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> command(
             @RequestParam(defaultValue = "") String cmd) {
@@ -200,7 +203,7 @@ public class HackController {
         return ResponseEntity.ok(GameStateSerializer.toMap(gs));
     }
 
-    @GetMapping("/state")
+    @GetMapping("/api/v1/state")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> state() {
         GameState gs = session.getState();
