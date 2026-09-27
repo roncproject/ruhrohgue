@@ -30,29 +30,20 @@
 			"name": "POST /new - Start New Game",
 			"request": {
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
 				"body": {
-					"mode": "urlencoded",
-					"urlencoded": [
-						{
-							"key": "name",
-							"value": "Abc",
-							"type": "text",
-							"description": "Exactly 3 alphanumeric characters (^[a-zA-Z0-9]{3}$)"
-						},
-						{
-							"key": "role",
-							"value": "Fighter",
-							"type": "text",
-							"description": "One of: Fighter, Cave-man, Tourist, Wizard, Knight, Speleologist"
-						},
-						{
-							"key": "seed",
-							"value": "12345",
-							"type": "text",
-							"description": "Optional signed 64-bit integer; blank/invalid falls back to a random seed"
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Abc\",\n  \"role\": \"Fighter\",\n  \"seed\": \"12345\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
 						}
-					]
+					}
 				},
 				"url": {
 					"raw": "{{baseUrl}}/api/v1/new",
@@ -72,17 +63,20 @@
 			"name": "POST /command - Execute Command",
 			"request": {
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
 				"body": {
-					"mode": "urlencoded",
-					"urlencoded": [
-						{
-							"key": "cmd",
-							"value": "s",
-							"type": "text",
-							"description": "Single game command character/string (e.g. movement key)"
+					"mode": "raw",
+					"raw": "{\n  \"cmd\": \"s\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
 						}
-					]
+					}
 				},
 				"url": {
 					"raw": "{{baseUrl}}/api/v1/command",

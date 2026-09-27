@@ -340,10 +340,9 @@ applyState._inv=[];
 
 // ── API ───────────────────────────────────────────────────────────────────
 async function startGame(name,role,seed){
-  var body='name='+encodeURIComponent(name)+'&role='+encodeURIComponent(role);
-  if(seed) body+='&seed='+encodeURIComponent(seed);
+  var body=JSON.stringify({name:name,role:role,seed:seed||''});
   try{
-    var r=await fetch('/api/v1/new',{method:'POST',body:body,headers:{'Content-Type':'application/x-www-form-urlencoded'}});
+    var r=await fetch('/api/v1/new',{method:'POST',body:body,headers:{'Content-Type':'application/json'}});
     var d=await r.json();
     // The server validates the name independently of the browser. A rejection
     // must be shown rather than swallowed, or the new-game screen appears to
@@ -371,7 +370,7 @@ async function sendCommand(cmd, attempt){
   if(!isOnline){offlineQueue.push(cmd);document.getElementById('message-bar').textContent='[offline] Queued: '+cmd;return;}
   attempt = attempt || 0;
   try{
-    var r=await fetch('/api/v1/command',{method:'POST',body:'cmd='+encodeURIComponent(cmd),headers:{'Content-Type':'application/x-www-form-urlencoded'}});
+    var r=await fetch('/api/v1/command',{method:'POST',body:JSON.stringify({cmd:cmd}),headers:{'Content-Type':'application/json'}});
 
     // ── Rate limited ────────────────────────────────────────────────────
     // The server answers 429 with {"error":"rate_limited"}, which is NOT a

@@ -2,6 +2,7 @@ package hack.web;
 
 import hack.engine.*;
 import hack.model.*;
+import hack.web.dto.CommandRequest;
 import hack.web.dto.NewGameRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -102,7 +103,8 @@ public class HackController {
         return "index";
     }
 
-    // ── Game API (unchanged from v1) ──────────────────────────────────────────
+    // ── Game API ─────────────────────────────────────────────────────────────
+    // JSON request bodies (TRK-03) under /api/v1 (TRK-04).
 
     /**
      * Starts a new game.
@@ -120,12 +122,13 @@ public class HackController {
      * a pattern: the set of valid classes is known and closed, so an allow-list
      * is both stricter and clearer than any regular expression.</p>
      */
-    @PostMapping(value = "/api/v1/new", consumes = "application/x-www-form-urlencoded")
+    @PostMapping(value = "/api/v1/new", consumes = "application/json")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> newGame(
-            @RequestParam(defaultValue = "") String name,
-            @RequestParam(defaultValue = "Fighter") String role,
-            @RequestParam(required = false) String seed) {
+    public ResponseEntity<Map<String, Object>> newGame(@RequestBody NewGameRequest request) {
+
+        String name = request.getPlayerName();
+        String role = request.getRole();
+        String seed = request.getSeed();
 
         String candidate = (name == null) ? "" : name.trim();
         if (!NewGameRequest.isValidName(candidate)) {
@@ -179,10 +182,12 @@ public class HackController {
         return ResponseEntity.ok(GameStateSerializer.toMap(gs));
     }
 
-    @PostMapping(value = "/api/v1/command", consumes = "application/x-www-form-urlencoded")
+    @PostMapping(value = "/api/v1/command", consumes = "application/json")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> command(
-            @RequestParam(defaultValue = "") String cmd) {
+    public ResponseEntity<Map<String, Object>> command(@RequestBody CommandRequest request) {
+
+        String cmd = request.getCmd();
+        if (cmd == null) cmd = "";
 
         GameState gs = session.getState();
         if (gs == null) {

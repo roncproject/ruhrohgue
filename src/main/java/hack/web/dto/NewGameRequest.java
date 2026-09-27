@@ -1,5 +1,6 @@
 package hack.web.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -43,6 +44,9 @@ public class NewGameRequest {
     /** The regular expression every player name must match. */
     public static final String NAME_PATTERN = "^[a-zA-Z0-9]{3}$";
 
+    // Wire key stays "name" - matches the field id in index.html and the
+    // JSON the JS client already sends; only the Java-side name is fuller.
+    @JsonProperty("name")
     @NotBlank(message = "Name cannot be empty")
     @Size(min = 3, max = 3, message = "Name must be exactly 3 characters")
     @Pattern(regexp = NAME_PATTERN,
