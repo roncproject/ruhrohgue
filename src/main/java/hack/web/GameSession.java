@@ -1,5 +1,6 @@
 package hack.web;
 
+import hack.model.Dice;
 import hack.model.GameState;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -25,6 +26,15 @@ public class GameSession {
     /** The player's current game state, or {@code null} before the first /new call. */
     private GameState state;
 
+    /**
+     * This session's own RNG state (TRK-02A / TRK-02B) — one {@link Dice.State}
+     * per browser session, bound to {@link Dice} by the controller at the top
+     * of every request that touches game logic. Living here rather than as
+     * static fields on Dice is what stops one session's /new or level
+     * generation from disturbing any other session's game.
+     */
+    private final Dice.State diceState = new Dice.State();
+
     /** Returns the current game state, or {@code null} if no game has been started. */
     public GameState getState() {
         return state;
@@ -33,5 +43,10 @@ public class GameSession {
     /** Replaces the current game state (called by POST /new). */
     public void setState(GameState state) {
         this.state = state;
+    }
+
+    /** Returns this session's own Dice RNG state. */
+    public Dice.State getDiceState() {
+        return diceState;
     }
 }

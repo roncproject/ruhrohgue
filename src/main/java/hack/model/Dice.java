@@ -24,10 +24,55 @@ import java.util.Random;
  */
 public final class Dice {
 
-    /** The shared Random instance used by all dice functions. */
-    private static final Random RNG = new Random();
-
     private Dice() {}
+
+    /**
+     * Per-session RNG state (TRK-02A / TRK-02B).
+     *
+     * <p>Dice used to hold this as plain static fields: one {@link Random},
+     * one game seed, one generation-depth counter, shared by every player
+     * on the server. A {@code /new} in one browser session reseeded the
+     * exact same {@code Random} instance every other in-progress session
+     * was reading from (TRK-02A), and two sessions generating a floor at
+     * the same time raced on the same non-atomic {@code generationDepth}
+     * and {@code savedState} fields, each capable of corrupting the
+     * other's stream (TRK-02B).</p>
+     *
+     * <p>Each field that used to be {@code static} now lives in one of
+     * these, one per {@link hack.web.GameSession} — so two sessions no
+     * longer share any mutable RNG state at all, regardless of timing.</p>
+     */
+    public static final class State {
+        final Random rng = new Random();
+        long gameSeed;
+        int  generationDepth;
+        long savedState;
+    }
+
+    /**
+     * Binds the calling thread to one session's {@link State} for the
+     * duration of a single request. Spring MVC handles one HTTP request
+     * per thread from a pool, so this is set at the top of every
+     * controller method that touches game logic and must be cleared in a
+     * {@code finally} block — otherwise a reused pool thread would leak
+     * one session's Dice state into whichever session's request it
+     * handles next, recreating TRK-02A by a different route.
+     */
+    private static final ThreadLocal<State> CURRENT = ThreadLocal.withInitial(State::new);
+
+    /** Binds {@code state} to the current thread. Pair with {@link #unbind()}. */
+    public static void bind(State state) { CURRENT.set(state); }
+
+    /**
+     * Clears the current thread's binding. Falling back to a fresh,
+     * unshared {@link State} (rather than throwing) if Dice is ever used
+     * without an explicit {@link #bind}, e.g. {@code HackApplication}'s
+     * startup seed call, or a unit test calling {@code Dice.rnd(...)}
+     * directly — both get their own isolated stream instead of a crash.
+     */
+    public static void unbind() { CURRENT.remove(); }
+
+    private static State current() { return CURRENT.get(); }
 
     // -----------------------------------------------------------------------
     // Seeding
@@ -41,23 +86,18 @@ public final class Dice {
      *             non-reproducible games)
      */
     public static void seed(long seed) {
-        RNG.setSeed(seed);
-        gameSeed = seed;
-        generationDepth = 0;
+        State s = current();
+        s.rng.setSeed(seed);
+        s.gameSeed = seed;
+        s.generationDepth = 0;
     }
 
     // -----------------------------------------------------------------------
     // Deterministic level generation  (per-floor derived seeds)
     // -----------------------------------------------------------------------
 
-    /** The seed this game was started with — the basis for per-floor seeds. */
-    private static long gameSeed;
-
-    /** Guards against nested begin/endLevelGeneration pairs. */
-    private static int generationDepth;
-
     /** Returns the seed the current game was started with. */
-    public static long gameSeed() { return gameSeed; }
+    public static long gameSeed() { return current().gameSeed; }
 
     /**
      * Derives the seed for one dungeon floor.
@@ -70,7 +110,7 @@ public final class Dice {
      * @return the seed to build that floor with
      */
     public static long floorSeed(int dlevel) {
-        long z = gameSeed + 0x9E3779B97F4A7C15L * (dlevel + 1L);
+        long z = current().gameSeed + 0x9E3779B97F4A7C15L * (dlevel + 1L);
         z = (z ^ (z >>> 30)) * 0xBF58476D1CE4E5B9L;
         z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;
         return z ^ (z >>> 31);
@@ -90,15 +130,13 @@ public final class Dice {
      * @param dlevel dungeon floor being generated
      */
     public static void beginLevelGeneration(int dlevel) {
-        if (generationDepth++ > 0) return;      // already inside a generation
+        State s = current();
+        if (s.generationDepth++ > 0) return;      // already inside a generation
         // Capture a continuation point for the main stream, then hand the RNG
         // over to the floor-specific seed.
-        savedState = RNG.nextLong();
-        RNG.setSeed(floorSeed(dlevel));
+        s.savedState = s.rng.nextLong();
+        s.rng.setSeed(floorSeed(dlevel));
     }
-
-    /** Continuation value used to resume the main stream after generation. */
-    private static long savedState;
 
     /**
      * Restores the main RNG stream after a floor has been generated.
@@ -108,9 +146,10 @@ public final class Dice {
      * independent of how many draws level generation consumed.</p>
      */
     public static void endLevelGeneration() {
-        if (--generationDepth > 0) return;
-        if (generationDepth < 0) generationDepth = 0;
-        RNG.setSeed(savedState);
+        State s = current();
+        if (--s.generationDepth > 0) return;
+        if (s.generationDepth < 0) s.generationDepth = 0;
+        s.rng.setSeed(s.savedState);
     }
 
     // -----------------------------------------------------------------------
@@ -130,7 +169,7 @@ public final class Dice {
      */
     public static int rn1(int x, int y) {
         if (x <= 0) return y;
-        return RNG.nextInt(x) + y;
+        return current().rng.nextInt(x) + y;
     }
 
     /**
@@ -145,7 +184,7 @@ public final class Dice {
      */
     public static int rn2(int x) {
         if (x <= 0) return 0;
-        return RNG.nextInt(x);
+        return current().rng.nextInt(x);
     }
 
     /**
@@ -160,7 +199,7 @@ public final class Dice {
      */
     public static int rnd(int x) {
         if (x <= 0) return 1;
-        return RNG.nextInt(x) + 1;
+        return current().rng.nextInt(x) + 1;
     }
 
     /**

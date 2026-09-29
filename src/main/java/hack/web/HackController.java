@@ -185,23 +185,33 @@ public class HackController {
         } else {
             gameSeed = System.currentTimeMillis();
         }
-        hack.model.Dice.seed(gameSeed);
 
-        GameState gs = new GameState();
-        gs.setSeedInfo(gameSeed, explicit);
-        gs.startNewGame(safeName, safeRole);
-        LevelGenerator.makeLevel(gs, 1);
-        // makeLevel() spawns the floor's monsters inside its deterministic window.
-        VisibilityEngine.setSee(gs);
-        GameEngine.findAc(gs);
+        // Bind this session's own Dice state to the current thread for the
+        // duration of this request (TRK-02A / TRK-02B) - without this,
+        // Dice.seed() below would reseed a stream shared with every other
+        // session on the server instead of only this player's.
+        hack.model.Dice.bind(session.getDiceState());
+        try {
+            hack.model.Dice.seed(gameSeed);
 
-        // Spawn the little dog companion on level 1
-        LevelGenerator.spawnDogNearPlayer(gs);
-        gs.pline("Little dog says: Ruh Roh.");
-        if (explicit) gs.pline("Dungeon seed: " + gameSeed + ".");
+            GameState gs = new GameState();
+            gs.setSeedInfo(gameSeed, explicit);
+            gs.startNewGame(safeName, safeRole);
+            LevelGenerator.makeLevel(gs, 1);
+            // makeLevel() spawns the floor's monsters inside its deterministic window.
+            VisibilityEngine.setSee(gs);
+            GameEngine.findAc(gs);
 
-        session.setState(gs);
-        return ResponseEntity.ok(GameStateSerializer.toMap(gs));
+            // Spawn the little dog companion on level 1
+            LevelGenerator.spawnDogNearPlayer(gs);
+            gs.pline("Little dog says: Ruh Roh.");
+            if (explicit) gs.pline("Dungeon seed: " + gameSeed + ".");
+
+            session.setState(gs);
+            return ResponseEntity.ok(GameStateSerializer.toMap(gs));
+        } finally {
+            hack.model.Dice.unbind();
+        }
     }
 
     @PostMapping(value = "/api/v1/command", consumes = "application/json")
@@ -215,19 +225,29 @@ public class HackController {
         if (gs == null) {
             return ResponseEntity.ok(Map.of("error", "no game"));
         }
-        GameEngine.doCommand(gs, cmd);
 
-        // If the game just ended in death, record and return the high score table
-        if (gs.getPhase() == hack.model.GameState.Phase.DEAD) {
-            hack.model.Player p = gs.getPlayer();
-            hack.model.HighScoreEntry entry = new hack.model.HighScoreEntry(
-                p.getName(), p.getCharacterClass(),
-                gs.getMaxDungeonLevel(), gs.getFinalScore());
-            java.util.List<hack.model.HighScoreEntry> top7 =
-                highScoreService.addAndGet(entry);
-            return ResponseEntity.ok(GameStateSerializer.toMap(gs, top7));
+        // Same binding as newGame() (TRK-02A / TRK-02B): doCommand() can
+        // trigger level generation (e.g. descending stairs), which touches
+        // Dice's begin/endLevelGeneration - must resolve to this session's
+        // own stream, not one shared with whoever else is playing.
+        hack.model.Dice.bind(session.getDiceState());
+        try {
+            GameEngine.doCommand(gs, cmd);
+
+            // If the game just ended in death, record and return the high score table
+            if (gs.getPhase() == hack.model.GameState.Phase.DEAD) {
+                hack.model.Player p = gs.getPlayer();
+                hack.model.HighScoreEntry entry = new hack.model.HighScoreEntry(
+                    p.getName(), p.getCharacterClass(),
+                    gs.getMaxDungeonLevel(), gs.getFinalScore());
+                java.util.List<hack.model.HighScoreEntry> top7 =
+                    highScoreService.addAndGet(entry);
+                return ResponseEntity.ok(GameStateSerializer.toMap(gs, top7));
+            }
+            return ResponseEntity.ok(GameStateSerializer.toMap(gs));
+        } finally {
+            hack.model.Dice.unbind();
         }
-        return ResponseEntity.ok(GameStateSerializer.toMap(gs));
     }
 
     @GetMapping("/api/v1/state")
