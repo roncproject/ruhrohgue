@@ -308,3 +308,9 @@ body {
   font-size: 0.68rem; letter-spacing: 0.06em;
   color: #888; font-family: inherit;
 }
+/* App version, shown on the start screen (WISH: central version number) */
+.ng-version {
+  margin-top: 16px;
+  font-size: 0.65rem; letter-spacing: 0.06em;
+  color: #888; font-family: inherit;
+}
