@@ -13,10 +13,9 @@
 
 'use strict';
 
-const CACHE_NAME    = 'ruhrohgue-v5';
+const CACHE_NAME    = 'ruhrohgue-v6';
 const STATIC_ASSETS = [
   '/',
-  '/index.html',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
