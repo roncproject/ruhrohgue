@@ -26,7 +26,12 @@ FROM eclipse-temurin:17-jre-jammy
 
 LABEL maintainer="you@example.com"
 LABEL description="Hack 1.0.2 — AWS Web Edition"
-LABEL version="1.0.2"
+# No LABEL version here on purpose: a hand-typed Docker label drifts from
+# reality the moment pom.xml's <version> changes, same as the two other
+# hardcoded version strings this cleaned up (WISH: central version number).
+# The JAR's own embedded build-info (META-INF/build-info.properties) is the
+# actual source of truth now; nothing reads a Docker-level version label in
+# this deployment pipeline, so a wrong one is worse than none.
 
 # Non-root user (AWS security best practice)
 RUN groupadd -r ruhrohgue && useradd -r -g ruhrohgue -s /bin/false ruhrohgue

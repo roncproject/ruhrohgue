@@ -4,7 +4,10 @@ import hack.engine.*;
 import hack.model.*;
 import hack.web.dto.CommandRequest;
 import hack.web.dto.NewGameRequest;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringBootVersion;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -55,6 +58,20 @@ public class HackController {
     private final HighScoreService highScoreService;
 
     /**
+     * App version shown on the page, read from {@code pom.xml}'s
+     * {@code <version>} via Spring Boot's build-info (see the
+     * spring-boot-maven-plugin execution in {@code pom.xml}) — the single
+     * source of truth for the version number (WISH: central version number).
+     * An {@link ObjectProvider} rather than a direct dependency: the
+     * {@code BuildProperties} bean only exists when
+     * {@code META-INF/build-info.properties} is on the classpath, which is
+     * true for any Maven build but not guaranteed for every IDE "run"
+     * configuration — falling back to {@code "dev"} rather than failing to
+     * start keeps local development working either way.
+     */
+    private final String appVersion;
+
+    /**
      * Shared secret required on {@code DELETE /dev/scores}, bound from
      * {@code ruhrohgue.admin.token} (which in turn reads the {@code ADMIN_TOKEN}
      * environment variable — see application.properties). Read once at startup
@@ -71,9 +88,12 @@ public class HackController {
             ? System.getenv("CANONICAL_URL")
             : "https://ruhrohgue.dev";
 
-    public HackController(GameSession session, HighScoreService highScoreService) {
+    public HackController(GameSession session, HighScoreService highScoreService,
+                           ObjectProvider<BuildProperties> buildProperties) {
         this.session          = session;
         this.highScoreService = highScoreService;
+        BuildProperties bp = buildProperties.getIfAvailable();
+        this.appVersion = (bp != null) ? bp.getVersion() : "dev";
     }
 
     // ── SSR landing page ──────────────────────────────────────────────────────
@@ -96,9 +116,11 @@ public class HackController {
         model.addAttribute("introText",
                 "RuhRohgue, Cloud version of Hack 1.0.2. Copyright © Stichting Mathematisch Centrum, Amsterdam, 1985");
         model.addAttribute("canonicalUrl", BASE_URL + "/");
-        model.addAttribute("appVersion", "2.0.3");
+        model.addAttribute("appVersion", appVersion);
         model.addAttribute("buildInfo",
-                "Spring Boot 3.2.5 · Java 17 · AWS Elastic Beanstalk");
+                "Spring Boot " + SpringBootVersion.getVersion()
+                + " · Java " + System.getProperty("java.version")
+                + " · AWS Elastic Beanstalk");
         model.addAttribute("jsonLd", buildJsonLd());
         return "index";
     }

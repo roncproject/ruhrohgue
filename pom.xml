@@ -31,7 +31,7 @@
 
   <groupId>nl.cwi.hack</groupId>
   <artifactId>ruhrohgue</artifactId>
-  <version>3.1.0</version>
+  <version>3.1.1</version>
   <packaging>jar</packaging>
   <name>RuhRohgue — Cloud Edition</name>
   <description>
@@ -109,10 +109,23 @@
     </resources>
 
     <plugins>
-      <!-- Builds the executable fat JAR (replaces maven-jar-plugin) -->
+      <!-- Builds the executable fat JAR (replaces maven-jar-plugin).
+           The build-info execution writes META-INF/build-info.properties
+           into the JAR, which Spring Boot auto-exposes as a BuildProperties
+           bean (used by HackController for the version shown to players)
+           and via /actuator/info. pom.xml's <version> above is the single
+           source of truth this flows from — nothing else should hardcode
+           a version number. -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>build-info</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
