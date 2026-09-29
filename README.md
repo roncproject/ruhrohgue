@@ -1,6 +1,7 @@
 # 🕹️ RuhRohgue - Cloud Edition
 
-**RuhRohgue** is a vibe-coded java port of the **Hack 1.0.2** (CWI Amsterdam 1985) roguelike. Thanks to a central *seed* functionality it should give the same dungeon, each time.
+**RuhRohgue** is a vibe-coded java port of the **Hack 1.0.2** (CWI Amsterdam 1985) roguelike.
+**In development** So, no guarantees ...
 
 
 🚀 **Live Demo:** [https://ruhrohgue.dev](https://ruhrohgue.dev) 
