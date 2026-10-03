@@ -750,6 +750,23 @@ document.getElementById('btn-install').addEventListener('click',async function()
 document.getElementById('btn-dismiss-install').addEventListener('click',function(){document.getElementById('pwa-banner').classList.remove('visible');});
 window.addEventListener('appinstalled',function(){document.getElementById('pwa-banner').classList.remove('visible');dip=null;});
 
+// ── Privacy banner ────────────────────────────────────────────────────────
+// Shown once; dismissal remembered locally so it doesn't nag on every visit.
+// Note: this dismissal flag is itself the one piece of browser storage this
+// page uses — no tracking/analytics data, just "already saw the notice."
+(function(){
+  var DISMISS_KEY='ruhrohgue_privacy_dismissed';
+  var banner=document.getElementById('privacy-banner');
+  if(!banner)return;
+  try{
+    if(localStorage.getItem(DISMISS_KEY)!=='true')banner.classList.add('visible');
+  }catch(e){banner.classList.add('visible');}
+  document.getElementById('btn-dismiss-privacy').addEventListener('click',function(){
+    banner.classList.remove('visible');
+    try{localStorage.setItem(DISMISS_KEY,'true');}catch(e){}
+  });
+})();
+
 // ── Service worker ────────────────────────────────────────────────────────
 if('serviceWorker'in navigator){window.addEventListener('load',function(){
   navigator.serviceWorker.register('/sw.js').then(function(r){setInterval(function(){r.update();},60000);}).catch(function(){});
