@@ -59,8 +59,17 @@ body {
 }
 
 /* ── Banners ──────────────────────────────────────────────────── */
+/* position+z-index on all three: #new-game-screen/#gameover-screen are
+   fixed overlays at z-index:200, and a banner with no stacking context of
+   its own (position:static) paints *below* them regardless of DOM order -
+   visible through the modal's semi-transparent backdrop, but not actually
+   clickable, since the backdrop still captures the pointer event. Found via
+   the e2e Privacy banner dismiss scenario failing to click a button that
+   was, by every visual appearance, right there on screen. */
 #pwa-banner {
   display: none;
+  position: relative;
+  z-index: 300;
   background: #333333;
   color: #ffffff;
   font-size: 12px;
@@ -82,6 +91,8 @@ body {
 }
 #privacy-banner {
   display: none;
+  position: relative;
+  z-index: 300;
   background: #1a1a1a;
   color: var(--fg-dim);
   font-size: 12px;
@@ -104,6 +115,8 @@ body {
 }
 #offline-banner {
   display: none;
+  position: relative;
+  z-index: 300;
   background: #000000;
   color: var(--danger);
   font-size: 11px;

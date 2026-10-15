@@ -10,6 +10,9 @@ public class GamePage {
     // Selectors — match the real ids in templates/index.html
     private final String terminalGrid = "#dungeon-grid";
     private final String playerIcon = "[data-type='player']";
+    private final String statusPanel = "#status-table";
+    private final String inventoryPanel = "#inv-list";
+    private final String messageLog = "#msg-log";
 
     // Generous on purpose: CI runners are several times slower than a laptop.
     private static final double RENDER_TIMEOUT_MS = 10000;
@@ -28,6 +31,18 @@ public class GamePage {
 
     public boolean isMapVisible() {
         return page.locator(terminalGrid).isVisible();
+    }
+
+    public boolean isStatusPanelVisible() {
+        return page.locator(statusPanel).isVisible();
+    }
+
+    public boolean isInventoryPanelVisible() {
+        return page.locator(inventoryPanel).isVisible();
+    }
+
+    public boolean isMessageLogVisible() {
+        return page.locator(messageLog).isVisible();
     }
 
     public boolean isPlayerVisible() {
