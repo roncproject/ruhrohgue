@@ -71,14 +71,6 @@ public class ScoreStoreConfig {
                     + "ruhrohgue.scores.s3.bucket is not set. Falling back to the "
                     + "local file store — records will NOT survive a redeploy.");
             } else {
-//                S3Client.Builder builder = S3Client.builder();
-//                if (s3Region != null && !s3Region.isBlank()) {
-//                    builder = builder.region(Region.of(s3Region));
-//                }
-//                S3ScoreStore store = new S3ScoreStore(builder.build(), s3Bucket, s3Key);
-//                System.out.println("[ScoreStore] Player records: " + store.describe());
-//                return store;
-                // GEWIJZIGD: 'var' lost het type-probleem direct op zonder extra imports
                 var builder = S3Client.builder();
                 if (s3Region != null && !s3Region.isBlank()) {
                     builder = builder.region(Region.of(s3Region));
@@ -86,7 +78,6 @@ public class ScoreStoreConfig {
                 S3ScoreStore store = new S3ScoreStore(builder.build(), s3Bucket, s3Key);
                 System.out.println("[ScoreStore] Player records: " + store.describe());
                 return store;
-
             }
         }
 
