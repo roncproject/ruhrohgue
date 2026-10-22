@@ -63,6 +63,28 @@ class HighScoreServiceTest {
     }
 
     @Test
+    @DisplayName("addAndGet_identicalEntryTwice_storesItOnce")
+    void addAndGet_identicalEntryTwice_storesItOnce() {
+        HighScoreEntry death = new HighScoreEntry("Rcp", "Fighter", 3, 208L,
+            "2026-10-21 19:45:06");
+        service.addAndGet(death);
+        List<HighScoreEntry> result = service.addAndGet(new HighScoreEntry(
+            "Rcp", "Fighter", 3, 208L, "2026-10-21 19:45:06"));
+        assertEquals(1, result.size(),
+            "The same death arriving twice must not fill a second slot (TRK-013)");
+    }
+
+    @Test
+    @DisplayName("addAndGet_sameScoreDifferentTime_storesBoth")
+    void addAndGet_sameScoreDifferentTime_storesBoth() {
+        service.addAndGet(new HighScoreEntry("Rcp", "Fighter", 3, 208L, "2026-10-21 19:45:06"));
+        List<HighScoreEntry> result = service.addAndGet(
+            new HighScoreEntry("Rcp", "Fighter", 3, 208L, "2026-10-21 20:10:00"));
+        assertEquals(2, result.size(),
+            "Two real games that happen to score the same are both legitimate");
+    }
+
+    @Test
     @DisplayName("addAndGet_multipleEntries_returnsSortedHighestFirst")
     void addAndGet_multipleEntries_returnsSortedHighestFirst() {
         service.addAndGet(new HighScoreEntry("Bob",   "Thief",   2,  500L));

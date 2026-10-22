@@ -43,6 +43,22 @@ public class HighScoreEntry implements Comparable<HighScoreEntry> {
     public long   getScore()          { return score; }
     public String getDateTime()       { return dateTime; }
 
+    /** Two entries are the same record when every field matches (TRK-013). */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof HighScoreEntry e)) return false;
+        return maxFloor == e.maxFloor && score == e.score
+            && java.util.Objects.equals(name, e.name)
+            && java.util.Objects.equals(characterClass, e.characterClass)
+            && java.util.Objects.equals(dateTime, e.dateTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(name, characterClass, maxFloor, score, dateTime);
+    }
+
     /** Highest score sorts first. */
     @Override
     public int compareTo(HighScoreEntry o) {

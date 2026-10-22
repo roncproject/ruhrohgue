@@ -61,9 +61,13 @@ public class HighScoreService {
     public List<HighScoreEntry> addAndGet(HighScoreEntry e) {
         lock.writeLock().lock();
         try {
-            entries.add(e);
-            Collections.sort(entries);          // highest score first
-            save();
+            // An identical record (same player, class, floor, score and second)
+            // is the same death arriving twice, not a second death (TRK-013).
+            if (!entries.contains(e)) {
+                entries.add(e);
+                Collections.sort(entries);      // highest score first
+                save();
+            }
             return snapshotTopN();
         } finally {
             lock.writeLock().unlock();

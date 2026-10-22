@@ -8,9 +8,17 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
+import hack.model.GameState;
+import hack.engine.LevelGenerator;
+import org.springframework.http.MediaType;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -65,5 +73,27 @@ class HackControllerTest {
                 .andExpect(status().isOk());
 
         verify(highScoreService).clearAll();
+    }
+
+    // ── TRK-013: one death, one record ────────────────────────────────────
+
+    @Test
+    @DisplayName("command_repeatedCommandsAfterDeath_recordsTheDeathExactlyOnce")
+    void command_repeatedCommandsAfterDeath_recordsTheDeathExactlyOnce() throws Exception {
+        GameState dead = new GameState();
+        dead.startNewGame("Bob", "Fighter");
+        LevelGenerator.makeLevel(dead, 1);
+        dead.setPhase(GameState.Phase.DEAD);
+        when(session.getState()).thenReturn(dead);
+
+        // Commands already in flight when the player died keep arriving.
+        for (int i = 0; i < 4; i++) {
+            mockMvc.perform(post("/api/v1/command")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"cmd\":\"l\"}"))
+                    .andExpect(status().isOk());
+        }
+
+        verify(highScoreService, times(1)).addAndGet(any());
     }
 }
