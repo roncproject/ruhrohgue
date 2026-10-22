@@ -180,6 +180,10 @@ public class GameState {
     /** Final score. */
     private long finalScore;
 
+    /** Set once this game's death has been written to the high-score table (TRK-013). */
+    private final java.util.concurrent.atomic.AtomicBoolean scoreRecorded =
+            new java.util.concurrent.atomic.AtomicBoolean(false);
+
     // -----------------------------------------------------------------------
     // Moon phase
     // -----------------------------------------------------------------------
@@ -538,6 +542,12 @@ public class GameState {
 
     public long         getFinalScore()     { return finalScore; }
     public void         setFinalScore(long s){ finalScore=s; }
+
+    /**
+     * Claims the right to record this game's death. Returns true for exactly
+     * one caller, even when several requests race (TRK-013).
+     */
+    public boolean claimScoreRecording() { return scoreRecorded.compareAndSet(false, true); }
 
     public int          getMoonPhase()      { return moonPhase; }
 

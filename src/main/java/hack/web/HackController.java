@@ -234,14 +234,20 @@ public class HackController {
         try {
             GameEngine.doCommand(gs, cmd);
 
-            // If the game just ended in death, record and return the high score table
+            // Dead: return the high score table. The death is recorded only once
+            // per game (TRK-013) - commands already in flight when the player
+            // died also arrive here and must not add further copies.
             if (gs.getPhase() == hack.model.GameState.Phase.DEAD) {
-                hack.model.Player p = gs.getPlayer();
-                hack.model.HighScoreEntry entry = new hack.model.HighScoreEntry(
-                    p.getName(), p.getCharacterClass(),
-                    gs.getMaxDungeonLevel(), gs.getFinalScore());
-                java.util.List<hack.model.HighScoreEntry> top7 =
-                    highScoreService.addAndGet(entry);
+                java.util.List<hack.model.HighScoreEntry> top7;
+                if (gs.claimScoreRecording()) {
+                    hack.model.Player p = gs.getPlayer();
+                    hack.model.HighScoreEntry entry = new hack.model.HighScoreEntry(
+                        p.getName(), p.getCharacterClass(),
+                        gs.getMaxDungeonLevel(), gs.getFinalScore());
+                    top7 = highScoreService.addAndGet(entry);
+                } else {
+                    top7 = highScoreService.topN();
+                }
                 return ResponseEntity.ok(GameStateSerializer.toMap(gs, top7));
             }
             return ResponseEntity.ok(GameStateSerializer.toMap(gs));
