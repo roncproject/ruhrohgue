@@ -17,7 +17,7 @@ built and deployed. Where something is a target rather than a fact, it says so.
 | Build | Maven; `mvn clean package` produces one executable JAR (`ruhrohgue.jar`) |
 | Frontend | Vanilla JavaScript, no build step, served from `classpath:/static/` |
 | PWA | `sw.js` service worker and a Web App Manifest |
-| Container | Docker image built by the separate **Multideplo** deployment repository: Amazon Corretto 17 (Alpine) with nginx and the application JAR. This repository's own `Dockerfile` is for standalone use (see §2.4) |
+| Container | Docker image built by the separate **Multideplo** deployment repository: Amazon Corretto 17 (Alpine) with nginx and the application JAR. This repository deliberately contains no `Dockerfile` or `Procfile` (see §2.4) |
 | Persistence | A single score file, stored on local disk or in Amazon S3 (see [backend-schema.md](backend-schema.md)) |
 | Observability | Spring Boot Actuator, `health` and `info` only |
 | Tests | JUnit 5 + Mockito (unit), Postman/newman (API), Playwright + Cucumber (browser e2e) |
@@ -89,30 +89,46 @@ falls back to the file store rather than refusing to start.
 | This repository (`ruhrohgue`) | The application: source, tests, the version in `pom.xml`, and the JAR that `mvn clean package` produces |
 | Multideplo | How it is shipped: the production `Dockerfile`, `nginx.conf`, `entrypoint.sh`, `Dockerrun.aws.json`, and the GitHub Actions that place the JAR in the bundle as `app1.jar` |
 
-**Multideplo leads for deployment.** What runs in production is defined there, not by this repository's `Dockerfile` or `Procfile`. Those two files are for running the game standalone (for example `docker run` on a laptop) and do not affect production.
+**Multideplo leads for deployment.** What runs in production is defined there. This repository has no `Dockerfile` or `Procfile` on purpose: it used to carry both, but production never used them (Multideplo builds its own image and starts the game itself), so they only suggested a second, different way to run the game. To run the game locally, use `mvn spring-boot:run` or `java -jar target/ruhrohgue.jar`.
 
 Things the two sides must agree on:
 
 - The JAR (this repository produces it, Multideplo consumes it as `app1.jar`).
-- The port the game listens on (production passes `-Dserver.port=8081`; the `Procfile`'s 5000 is not used).
+- The port the game listens on (production passes `-Dserver.port=8081`; the local default is 8080).
 - The environment properties in §2.2, which are set on the Elastic Beanstalk environment, not in either repository.
 - The JVM arguments and game arguments in `entrypoint.sh`: heap capped at 512 MB, and the demo seed below.
 
 **Demo seed.** Production starts the game with a fixed dungeon seed of 20, so every new game begins in the same dungeon. This is deliberate, because it makes a good demo. A player can still type their own seed on the new-game screen, and a typed seed wins over the fixed one. Removing `--SEED 20` from `entrypoint.sh` returns to a random dungeon per game.
+
+**How a release happens today:**
+
+1. A push to the `main` branch of Multideplo starts its GitHub Actions workflow. A merge in this repository does **not** deploy by itself.
+2. The workflow checks out the default branch of this repository as it is at that moment (not a tagged version), builds the JAR with `mvn clean package -DskipTests`, and stages it as `app1.jar`.
+3. It starts the game on port 8081 and runs this repository's Playwright e2e suite and Postman API suite against it. If either fails, nothing is deployed. The reports are kept for 7 days as a build artifact.
+4. It zips the Multideplo files and the JAR, then ships the bundle to the production Elastic Beanstalk environment, labelled `release-<Multideplo commit>`.
+
+Consequences worth knowing:
+
+- The release label is a Multideplo commit, not a version of this repository. Use the version shown on the start screen to see what the game is.
+- The unit tests in `src/test` are skipped in the pipeline's build step. Run them locally before merging.
+- The pipeline authenticates to AWS with credentials held as GitHub secrets. A role-based login (OIDC) would avoid long-lived keys.
+- Deployments appear to use Elastic Beanstalk's immutable policy, which starts a temporary second instance during a release.
+
+**Other rules:**
 
 - A deployment bundle is the Multideplo files plus the JAR. It does not contain this repository's source.
 - Releases follow semantic versioning, with `pom.xml` as the **single source of
   truth** for the version. The JAR embeds it as build info; the page reads it
   from there. Do not hand-type a version anywhere else.
 - Changes reach `main` through pull requests.
-- A hosted deploy-from-GitHub flow is a wish, not a fact:
-  [WISH-02](https://github.com/roncproject/ruhrohgue/issues/10).
+- Triggering Multideplo automatically when this repository changes is a wish,
+  not a fact: [WISH-02](https://github.com/roncproject/ruhrohgue/issues/10).
 
 ### 2.5 Operations
 
-- **Health check:** `GET /actuator/health` returns `UP`. This repository's
-  standalone `Dockerfile` uses it for a container health check; the production
-  image does not define one, and Elastic Beanstalk health reporting is used instead.
+- **Health check:** `GET /actuator/health` returns `UP`. The production
+  image does not define a container health check; Elastic Beanstalk's own health
+  reporting is used.
 - **Restart:** Elastic Beanstalk → *Restart app server(s)* re-reads the score
   file from S3 and drops all in-memory sessions.
 - **Resetting scores:** delete the score object in S3, **then** restart the app
