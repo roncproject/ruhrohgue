@@ -17,7 +17,7 @@ built and deployed. Where something is a target rather than a fact, it says so.
 | Build | Maven; `mvn clean package` produces one executable JAR (`ruhrohgue.jar`) |
 | Frontend | Vanilla JavaScript, no build step, served from `classpath:/static/` |
 | PWA | `sw.js` service worker and a Web App Manifest |
-| Container | Docker, multi-stage: a JDK stage compiles with Maven, a slim JRE stage runs the JAR as a non-root user |
+| Container | Docker image built by the separate **Multideplo** deployment repository: Amazon Corretto 17 (Alpine) with nginx and the application JAR. This repository's own `Dockerfile` is for standalone use (see §2.4) |
 | Persistence | A single score file, stored on local disk or in Amazon S3 (see [backend-schema.md](backend-schema.md)) |
 | Observability | Spring Boot Actuator, `health` and `info` only |
 | Tests | JUnit 5 + Mockito (unit), Postman/newman (API), Playwright + Cucumber (browser e2e) |
@@ -33,8 +33,9 @@ The application talks to AWS through the AWS SDK for Java v2 (S3 client only).
 |---|---|
 | Compute | AWS Elastic Beanstalk, **Docker** platform on Amazon Linux 2023 |
 | Environment type | **Single instance**, no load balancer |
-| Proxy in front of the container | nginx (the Elastic Beanstalk default) |
-| Container port | **5000**, set by the `Procfile` (`--server.port=5000`); local default is 8080 |
+| Proxies | nginx on the instance (the Elastic Beanstalk default), then a second nginx inside the container |
+| Ports | The container listens on **80** (nginx). The game runs on **8081** inside it and nginx forwards `/`, `/api/` and `/app1/` to it. Locally the app defaults to 8080 |
+| Packaging | One container can hold more than one application. The image has room for a second JAR (`app2.jar`, routed under `/app2/`), but only the game is started today |
 | Region | An EU region |
 | Instance size | A small general-purpose instance, sized with headroom for a second small app. Resize later from the environment's capacity settings |
 | Score storage | One S3 bucket, one object |
@@ -81,8 +82,25 @@ falls back to the file store rather than refusing to start.
 
 ### 2.4 Deployment (CI/CD)
 
-- The Docker build compiles the source itself, so a deployable source bundle
-  needs only `Dockerfile`, `Procfile`, `pom.xml` and `src/`.
+**Two repositories, two responsibilities:**
+
+| Repository | Owns |
+|---|---|
+| This repository (`ruhrohgue`) | The application: source, tests, the version in `pom.xml`, and the JAR that `mvn clean package` produces |
+| Multideplo | How it is shipped: the production `Dockerfile`, `nginx.conf`, `entrypoint.sh`, `Dockerrun.aws.json`, and the GitHub Actions that place the JAR in the bundle as `app1.jar` |
+
+**Multideplo leads for deployment.** What runs in production is defined there, not by this repository's `Dockerfile` or `Procfile`. Those two files are for running the game standalone (for example `docker run` on a laptop) and do not affect production.
+
+Things the two sides must agree on:
+
+- The JAR (this repository produces it, Multideplo consumes it as `app1.jar`).
+- The port the game listens on (production passes `-Dserver.port=8081`; the `Procfile`'s 5000 is not used).
+- The environment properties in §2.2, which are set on the Elastic Beanstalk environment, not in either repository.
+- The JVM arguments and game arguments in `entrypoint.sh`: heap capped at 512 MB, and the demo seed below.
+
+**Demo seed.** Production starts the game with a fixed dungeon seed of 20, so every new game begins in the same dungeon. This is deliberate, because it makes a good demo. A player can still type their own seed on the new-game screen, and a typed seed wins over the fixed one. Removing `--SEED 20` from `entrypoint.sh` returns to a random dungeon per game.
+
+- A deployment bundle is the Multideplo files plus the JAR. It does not contain this repository's source.
 - Releases follow semantic versioning, with `pom.xml` as the **single source of
   truth** for the version. The JAR embeds it as build info; the page reads it
   from there. Do not hand-type a version anywhere else.
@@ -92,8 +110,9 @@ falls back to the file store rather than refusing to start.
 
 ### 2.5 Operations
 
-- **Health check:** `GET /actuator/health` returns `UP`. The Dockerfile's
-  `HEALTHCHECK` uses it.
+- **Health check:** `GET /actuator/health` returns `UP`. This repository's
+  standalone `Dockerfile` uses it for a container health check; the production
+  image does not define one, and Elastic Beanstalk health reporting is used instead.
 - **Restart:** Elastic Beanstalk → *Restart app server(s)* re-reads the score
   file from S3 and drops all in-memory sessions.
 - **Resetting scores:** delete the score object in S3, **then** restart the app
@@ -110,7 +129,7 @@ Targets, not measured guarantees.
 |---|---|
 | API latency | A command round trip well under 100 ms on the server (the Postman run observes single-digit milliseconds locally) |
 | Throughput per client | 10 requests per second sustained, which comfortably exceeds a human playing, see §4 |
-| Memory | One game session is small; the container uses 75% of available RAM (`MaxRAMPercentage=75`) |
+| Memory | One game session is small; in production the Java heap is capped at 512 MB (`-Xmx512m`) |
 | Startup | The app is ready in a few seconds; the Docker health check allows a 20 s start period |
 | Static assets | Served with the service worker's cache-first strategy after the first visit |
 

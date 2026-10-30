@@ -111,6 +111,9 @@ Tracked as GitHub issues; see the issue list for the current state.
 - The game session lives in server memory. A deploy or restart ends games in
   progress. Scores are not affected.
 - The score table is shared by every player; there is no per-player history.
+- The public demo runs with a fixed dungeon seed (20), so every new game starts in
+  the same dungeon. This is deliberate. Players can type their own seed to get a
+  different one.
 - Only a death is recorded. A game ended by quitting, or by climbing out of the
   dungeon on floor 1 ("You Escaped"), shows its game-over screen but adds no
   entry. Whether an escape should count is a product decision that has not been

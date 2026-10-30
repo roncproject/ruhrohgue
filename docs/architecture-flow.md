@@ -99,7 +99,7 @@ flowchart LR
     end
     CF[Cloudflare<br/>TLS, WAF, bot rules]
     subgraph AWS["AWS, Elastic Beanstalk (single instance)"]
-        NG[nginx]
+        NG["nginx on the instance,<br/>then nginx in the container (port 80)<br/>forwarding to the game on 8081"]
         subgraph DC["Docker container"]
             F1[RequestSizeLimitFilter]
             F2[RateLimitFilter]
