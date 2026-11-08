@@ -20,7 +20,19 @@ public class InterfaceValidationSteps {
     private PrivacyBannerPage privacyBannerPage;
     private OfflineBannerPage offlineBannerPage;
 
-    private final String ACCEPTANCE_URL = "http://localhost:8081";
+    /**
+     * Target of the suite. Override with -Dacceptance.url=... or the
+     * ACCEPTANCE_URL environment variable to run against another environment;
+     * the default is the local build on port 8081.
+     */
+    private final String ACCEPTANCE_URL = resolveAcceptanceUrl();
+
+    private static String resolveAcceptanceUrl() {
+        String url = System.getProperty("acceptance.url");
+        if (url == null || url.isBlank()) url = System.getenv("ACCEPTANCE_URL");
+        if (url == null || url.isBlank()) url = "http://localhost:8081";
+        return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+    }
 
     @Before
     public void setup() {
