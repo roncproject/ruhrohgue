@@ -102,16 +102,18 @@ Things the two sides must agree on:
 
 **How a release happens today:**
 
-1. A push to the `main` branch of Multideplo starts its GitHub Actions workflow. A merge in this repository does **not** deploy by itself.
-2. The workflow checks out the default branch of this repository as it is at that moment (not a tagged version), builds the JAR with `mvn clean package -DskipTests`, and stages it as `app1.jar`.
-3. It starts the game on port 8081 and runs this repository's Playwright e2e suite and Postman API suite against it. If either fails, nothing is deployed. The reports are kept for 7 days as a build artifact.
-4. It zips the Multideplo files and the JAR, then ships the bundle to the production Elastic Beanstalk environment, labelled `release-<Multideplo commit>`.
+Multideplo's pipeline (`.github/workflows/deploy.yml`) runs three jobs in order on every push to its `main` branch, each gating the next. A merge in this repository does **not** deploy by itself.
+
+1. **build** — checks out the default branch of this repository as it is at that moment (not a tagged version), builds the JAR with `mvn clean package`, starts the game on port 8081, and runs this repository's Playwright e2e suite and Postman API suite against it. If either fails, nothing is deployed. It then zips the Multideplo files and the JAR into `deployment.zip` and uploads it as a workflow artifact. The reports are kept for 7 days as a build artifact.
+2. **acceptance** (`needs: build`) — authenticates to AWS via OIDC (no stored access keys), registers the uploaded bundle as an application version, and stands up a throwaway, single-instance Elastic Beanstalk environment matching production's instance type and IAM instance profile, with its own score file so the run never touches production's score table. Once that environment is healthy, it re-runs the same e2e and Postman suites against it over plain HTTP. The environment, its score object, and its application version are always deleted afterwards, success or failure. A separate scheduled workflow sweeps every 30 minutes to terminate any acceptance environment that teardown missed.
+3. **deploy** (`needs: acceptance`, only reached once acceptance has passed) — ships the exact same `deployment.zip` that acceptance tested to the production Elastic Beanstalk environment, labelled `release-<Multideplo commit>`.
 
 Consequences worth knowing:
 
 - The release label is a Multideplo commit, not a version of this repository. Use the version shown on the start screen to see what the game is.
 - The unit tests in `src/test` are skipped in the pipeline's build step. Run them locally before merging.
-- The pipeline authenticates to AWS with credentials held as GitHub secrets. A role-based login (OIDC) would avoid long-lived keys.
+- The pipeline authenticates to AWS by assuming an IAM role over OIDC — there are no long-lived AWS access keys held as GitHub secrets.
+- A build only reaches production after passing the same test suites twice: once locally against the bare JAR, once against a real, disposable Elastic Beanstalk environment running the actual deployment bundle.
 - Deployments appear to use Elastic Beanstalk's immutable policy, which starts a temporary second instance during a release.
 
 **Other rules:**
