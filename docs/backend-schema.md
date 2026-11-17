@@ -41,7 +41,7 @@ erDiagram
         boolean seedExplicit
         long finalScore
         string killer
-        boolean scoreRecorded "set once, see BUG-20"
+        boolean scoreRecorded "set once, see RUHR-BUG-20"
     }
     PLAYER {
         string name "3 chars, A-Z a-z 0-9"

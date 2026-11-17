@@ -70,7 +70,7 @@ The score is recorded **once**, on the first response after the game becomes
 `DEAD`. Only `DEAD` is recorded today: a game that ends in `QUIT` or `ESCAPED`
 shows its game-over screen but adds nothing to the table. Commands that were already in flight at the moment of death still reach
 the server; they receive the table but do not add to it
-([BUG-20](https://github.com/roncproject/ruhrohgue/issues/20)).
+([RUHR-BUG-20](https://github.com/roncproject/ruhrohgue/issues/20)).
 
 ### 2.2 Client states
 

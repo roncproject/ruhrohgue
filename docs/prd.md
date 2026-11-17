@@ -33,7 +33,7 @@ These are working assumptions, not research findings.
 |---|---|---|
 | **Curious visitor** | Try it in seconds, on a phone or desktop, with no sign-up | Zero-friction start, on-screen touch controls, no account |
 | **Roguelike veteran** | The original rules, reproducible runs, a readable score table | Faithful mechanics, an optional dungeon **seed**, a persistent "Magnificent 7" |
-| **Privacy-minded player** | No tracking, no cookie wall | No analytics, no third-party scripts, privacy notice ([WSH-15](https://github.com/roncproject/ruhrohgue/issues/15)) |
+| **Privacy-minded player** | No tracking, no cookie wall | No analytics, no third-party scripts, privacy notice ([RUHR-WSH-15](https://github.com/roncproject/ruhrohgue/issues/15)) |
 | **Maintainer** (the project owner) | Cheap to run, safe to change, easy to deploy | One small instance, automated tests, a single version source (`pom.xml`) |
 
 ## 4. Scope and core features (MoSCoW)
@@ -46,7 +46,7 @@ These are working assumptions, not research findings.
   Wizard, Knight, Speleologist).
 - Server-side game state: the browser renders what the server sends.
 - A persistent high-score table ("Magnificent 7") that survives redeploys.
-- Each death is recorded exactly once ([BUG-20](https://github.com/roncproject/ruhrohgue/issues/20)).
+- Each death is recorded exactly once ([RUHR-BUG-20](https://github.com/roncproject/ruhrohgue/issues/20)).
 - Abuse limits: request-rate and request-size caps.
 
 ### Should have
@@ -59,11 +59,11 @@ These are working assumptions, not research findings.
 
 ### Could have
 
-- A legal / imprint page ([WSH-15](https://github.com/roncproject/ruhrohgue/issues/15)),
+- A legal / imprint page ([RUHR-WSH-15](https://github.com/roncproject/ruhrohgue/issues/15)),
   using [`PRIVACY-LEGAL-TEMPLATE.md`](../PRIVACY-LEGAL-TEMPLATE.md) as a starting
   point. The template is a reference only, not legal text.
-- Content-Security-Policy and related headers ([WSH-9](https://github.com/roncproject/ruhrohgue/issues/9)).
-- Push-button deployment from GitHub ([WSH-10](https://github.com/roncproject/ruhrohgue/issues/10)).
+- Content-Security-Policy and related headers ([RUHR-WSH-9](https://github.com/roncproject/ruhrohgue/issues/9)).
+- Push-button deployment from GitHub ([RUHR-WSH-10](https://github.com/roncproject/ruhrohgue/issues/10)).
 
 ### Won't have (for now)
 
@@ -105,9 +105,9 @@ commercial. They are proposals to be confirmed by the maintainer.
 
 Tracked as GitHub issues; see the issue list for the current state.
 
-- Starvation death is dead code ([BUG-17](https://github.com/roncproject/ruhrohgue/issues/17)).
+- Starvation death is dead code ([RUHR-BUG-17](https://github.com/roncproject/ruhrohgue/issues/17)).
 - Cloudflare can block `manifest.json` and POST requests in some configurations
-  ([BUG-14](https://github.com/roncproject/ruhrohgue/issues/14)).
+  ([RUHR-BUG-14](https://github.com/roncproject/ruhrohgue/issues/14)).
 - The game session lives in server memory. A deploy or restart ends games in
   progress. Scores are not affected.
 - The score table is shared by every player; there is no per-player history.
