@@ -124,7 +124,7 @@ Consequences worth knowing:
   from there. Do not hand-type a version anywhere else.
 - Changes reach `main` through pull requests.
 - Triggering Multideplo automatically when this repository changes is a wish,
-  not a fact: [WISH-02](https://github.com/roncproject/ruhrohgue/issues/10).
+  not a fact: [WSH-10](https://github.com/roncproject/ruhrohgue/issues/10).
 
 ### 2.5 Operations
 
@@ -164,13 +164,13 @@ rules. Design intent:
   safe.
 - **The rate limiter trusts `CF-Connecting-IP`** to identify the client. That
   header is only trustworthy because the origin accepts nothing but Cloudflare
-  (see [TRK-06](https://github.com/roncproject/ruhrohgue/issues/7)). If the
+  (see [BUG-7](https://github.com/roncproject/ruhrohgue/issues/7)). If the
   origin were ever opened to the world, the header could be forged and the
   limiter bypassed.
 - **Bot challenges can break legitimate requests.** Cloudflare's challenge
   features can return `403` with a `cf-mitigated: challenge` header to a request
   that has no browser behind it, including `POST` API calls and `manifest.json`.
-  See [TRK-010](https://github.com/roncproject/ruhrohgue/issues/14). The fix
+  See [BUG-14](https://github.com/roncproject/ruhrohgue/issues/14). The fix
   lives in the Cloudflare dashboard, not in this repository.
 
 ### 4.2 Application
@@ -186,13 +186,13 @@ rules. Design intent:
 | Session | HTTP session, 4-hour timeout, one game per session |
 | Cookies | Only the session cookie the server needs; no tracking, no analytics |
 | CORS | The controller currently allows any origin (`@CrossOrigin("*")`). It sends no credentials, but it is worth tightening if the API ever becomes more than a game back end |
-| Not yet in place | Content-Security-Policy and related headers ([WISH-01](https://github.com/roncproject/ruhrohgue/issues/9)) |
+| Not yet in place | Content-Security-Policy and related headers ([WSH-9](https://github.com/roncproject/ruhrohgue/issues/9)) |
 
 ### 4.3 Privacy
 
 No analytics, advertising or third-party scripts. A zero-cookie notice is shown
 once and remembered in the browser's local storage. A legal page is still a
-draft ([WISH-04](https://github.com/roncproject/ruhrohgue/issues/15)); the repository
+draft ([WSH-15](https://github.com/roncproject/ruhrohgue/issues/15)); the repository
 template is reference material only and is not legal advice.
 
 ## 5. Test strategy
